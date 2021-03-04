@@ -1,0 +1,118 @@
+KAFKA CLI - Kafka Course: Learn Apache Kafka 2.0 for Beginners V.2
+
+Kafka Console CLI Topic Commands
+
+This tool helps to create, delete, describe, or change a topic.
+
+Create topic:
+$ kafka-topics.sh --bootstrap-server localhost:9092 --topic first_topic --create --partitions 3 --replication-factor 1
+$ kafka-topics.sh --bootstrap-server localhost:9092 --topic second_topic --create --partitions 3 --replication-factor 1
+
+List topics:
+$ kafka-topics.sh --bootstrap-server localhost:9092 --list
+
+Describe a topic:
+$ kafka-topics.sh --bootstrap-server localhost:9092 --topic first_topic --describe
+
+Delete a topic:
+$ kafka-topics.sh --bootstrap-server localhost:9092 --topic second_topic --delete
+
+
+Kafka Console CLI Producer Commands
+
+This tool helps to read data from standard input and publish it to Kafka.
+
+Producing messages to Topic
+$ kafka-console-producer.sh --broker-list localhost:9092 --topic first_topic
+
+Defining acks:
+$ kafka-console-producer.sh --broker-list localhost:9092 --topic first_topic --producer-property acks=all
+
+Producing message to a non-created Topic (1 partition default)
+$ kafka-console-producer.sh --broker-list localhost:9092 --topic new_topic
+
+Changing default partition to 3: (Log Basics section)
+$ nano config/server.properties
+num.partitions=3
+
+Attention: Need to restart de Kafka server (stop/start): ctrl+c and $ kafka-server-start.sh config/server.properties
+
+Producer with keys
+
+$ kafka-console-producer --broker-list 127.0.0.1:9092 --topic first_topic --property parse.key=true --property key.separator=,
+> key,value
+> another key,another value
+
+
+Kafka Console CLI Consumer Commands
+
+This tool helps to read data from Kafka topics and outputs it to standard output.
+
+Consuming messages from a topic (real-time consuming: messages from now)
+$ kafka-console-consumer.sh --bootstrap-server localhost:9092 --topic first_topic
+
+Consuming messages from a topic (ALL messages: --from-beginning)
+$ kafka-console-consumer.sh --bootstrap-server localhost:9092 --topic first_topic --from-beginning
+
+Consumer with keys
+
+$ kafka-console-consumer --bootstrap-server 127.0.0.1:9092 --topic first_topic --from-beginning --property print.key=true --property key.separator=,
+
+
+Kafka Console CLI Consumer Group Commands
+
+Specifying Consumer Group ID
+$ kafka-console-consumer.sh --bootstrap-server localhost:9092 --topic first_topic --group my_first_application_group
+
+New Group ID reading from beginning
+$ kafka-console-consumer.sh --bootstrap-server localhost:9092 --topic first_topic --group my_second_application_group --from-beginning 
+
+__consumer-offsets: “checkpoint” na partição do tópico, onde marca a posição da ultima msg lida pelo consumer-group
+    - App Consumer em um consumer-group (ID) com mais de um consumidor (>1 / vários consumidores): Quando o app (consumidor) cai (pára de funcionar), as msgs inseridas no tópico (produzidas) enquanto o consumidor estiver down (fora de funcionamento) NÃO serão lidas/recuperadas, quando o app voltar a execução, pois já foram consumidas por outro consumidor do grupo e o registro de offsets de consumo já foi realizado. Mesmo que use --from-beginning.
+    - App Consumer SOZINHO em um consumer-group (ID): Ao retornar a execução, devido ao registro no consumer-offsets, há um LAG (defasagem) de consumo de mensagens, portanto o consumidor irá ler as mensagens que ele não conseguir ler quando estava down, do ponto onde ele parou.
+    - App de Consumer SEM consumer group: Ao retornar NÃO recupera nenhuma mensagem do ponto onde parou. Se utilizar --from-beginning, TODAS as mensagens do tópico serão lidas de uma só vez.
+
+This tool helps to list all consumer groups, describe a consumer group, delete consumer group info, or reset consumer group offsets.
+
+List all consumer groups
+$ kafka-consumer-groups.sh --bootstrap-server localhost:9092 --list
+
+Describe a consumer-group (see topic/group LAG)
+$ kafka-consumer-groups.sh --bootstrap-server localhost:9092 --group my_first_application_group --describe
+
+Resetting Offsets
+
+Consumer groups reading lost topic messages or reading messages again
+ 
+  - Options:
+      ø --to-earliest: which means start at the beginning again
+      ø --to-datetime
+      ø --by-period
+      ø --to-latest
+      ø --shift-by
+      ø --from-file
+      ø --to-current
+
+ $ kafka-consumer-groups.sh --bootstrap-server localhost:9092 --topic first_topic --group my_first_application_group --reset-offsets --to-earliest --execute 
+
+GROUP                          TOPIC                          PARTITION  NEW-OFFSET     
+my_first_application_group     first_topic                    0          0              
+my_first_application_group     first_topic                    1          0              
+my_first_application_group     first_topic                    2          0              
+
+Shifting offsets fowards (shift 2 offsets for each partition | total messages will be consumed = #_partitions * 2)
+$ kafka-consumer-groups.sh --bootstrap-server localhost:9092 --topic first_topic --group my_first_application_group --reset-offsets --shift-by 2 --execute 
+
+Shifting offsets backwards (shift -2 offsets for each partition | total messages will be consumed = #_partitions * 2)
+$ kafka-consumer-groups.sh --bootstrap-server localhost:9092 --topic first_topic --group my_first_application_group --reset-offsets --shift-by -2 --execute 
+
+
+KafkaCat as a replacement for Kafka CLI:
+
+KafkaCat (https://github.com/edenhill/kafkacat) is an open-source alternative to using the Kafka CLI, created by Magnus Edenhill. While KafkaCat is not used in this course, if you have any interest in trying it out, I recommend reading: https://medium.com/@coderunner/debugging-with-kafkacat-df7851d21968
+
+
+
+
+
+
