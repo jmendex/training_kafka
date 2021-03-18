@@ -5,7 +5,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>com.github.jmendex</groupId>
-    <artifactId>kafka-course</artifactId>
+    <artifactId>twitterProject</artifactId>
     <packaging>pom</packaging>
     <version>1.0</version>
     <modules>
