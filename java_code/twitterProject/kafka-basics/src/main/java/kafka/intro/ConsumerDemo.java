@@ -18,7 +18,7 @@ public class ConsumerDemo {
 
         Logger logger = LoggerFactory.getLogger(ConsumerDemo.class.getName());
 
-        String bootstrapServers = "127.0.0.1:9092";
+        String bootstrapServers = "127.0.0.1:9092"; // Or localhost:9092
         String groupId = "my-fourth-application";
         String topic = "first_topic";
 
