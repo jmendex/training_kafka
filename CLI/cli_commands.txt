@@ -7,6 +7,12 @@ This tool helps to create, delete, describe, or change a topic.
 Create topic:
 $ kafka-topics.sh --bootstrap-server localhost:9092 --topic first_topic --create --partitions 3 --replication-factor 1
 $ kafka-topics.sh --bootstrap-server localhost:9092 --topic second_topic --create --partitions 3 --replication-factor 1
+$ kafka-topics.sh --bootstrap-server localhost:9092 --topic twitter_tweets --create --partitions 6 --replication-factor 1
+$ kafka-topics.sh --bootstrap-server localhost:9092 --topic important_tweets --create --partitions 6 --replication-factor 1
+$ kafka-topics.sh --bootstrap-server localhost:9092 --topic twitter_status_connect --create --partitions 6 --replication-factor 1
+$ kafka-topics.sh --bootstrap-server localhost:9092 --topic twitter_deletes_connect --create --partitions 6 --replication-factor 1
+
+
 
 List topics:
 $ kafka-topics.sh --bootstrap-server localhost:9092 --list
@@ -17,6 +23,29 @@ $ kafka-topics.sh --bootstrap-server localhost:9092 --topic first_topic --descri
 Delete a topic:
 $ kafka-topics.sh --bootstrap-server localhost:9092 --topic second_topic --delete
 
+Kafka CLI Topic Configurations Commands (advanced)
+Changing a topic configurations
+
+Ex. Changing min InSync replica to be equal to 2: (step-by-step)
+1 - $ kafka-topics.sh --bootstrap-server localhost:9092 --topic configured_topic --create --partitions 3 --replication-factor 1	
+2 - $ kafka-topics.sh --bootstrap-server localhost:9092 --topic configured_topic --describe (To see any configuration attached to it)
+
+New command kafka-configs: Add/Remove entity config for a Topic, client, user or broker.
+
+3 - $ kafka-configs.sh --bootstrap-server localhost:9092 --entity-type topics --entity-name configured_topic --describe
+4 - $ kafka-configs.sh --bootstrap-server localhost:9092 --entity-type topics --entity-name configured_topic --add-config min.insync.replicas=2 --alter   
+
+Seeing the results (new configuration to topic).
+
+5 - $ kafka-configs.sh --bootstrap-server localhost:9092 --entity-type topics --entity-name configured_topic --describe
+      $ kafka-configs.sh --zookeeper localhost:2181  --entity-type topics --entity-name configured_topic --describe
+
+6 - $ kafka-topics.sh --bootstrap-server localhost:9092 --topic configured_topic --describe
+
+Deleting de config:
+
+7 - $ kafka-configs.sh --zookeeper localhost:2181 --entity-type topics --entity-name configured_topic --delete-config min.insync.replicas --alter   
+8 - $ kafka-configs.sh --bootstrap-server localhost:9092 --entity-type topics --entity-name configured_topic --describe
 
 Kafka Console CLI Producer Commands
 
@@ -50,6 +79,9 @@ This tool helps to read data from Kafka topics and outputs it to standard output
 
 Consuming messages from a topic (real-time consuming: messages from now)
 $ kafka-console-consumer.sh --bootstrap-server localhost:9092 --topic first_topic
+$ kafka-console-consumer.sh --bootstrap-server localhost:9092 --topic twitter_tweets
+$ kafka-console-consumer.sh --bootstrap-server localhost:9092 --topic important_tweets
+
 
 Consuming messages from a topic (ALL messages: --from-beginning)
 $ kafka-console-consumer.sh --bootstrap-server localhost:9092 --topic first_topic --from-beginning
@@ -93,6 +125,8 @@ Consumer groups reading lost topic messages or reading messages again
       ø --from-file
       ø --to-current
 
+$ kafka-consumer-groups.sh --bootstrap-server localhost:9092 --topic twitter_tweets --group kafka-demo-elasticsearch --reset-offsets --to-earliest --execute 
+
  $ kafka-consumer-groups.sh --bootstrap-server localhost:9092 --topic first_topic --group my_first_application_group --reset-offsets --to-earliest --execute 
 
 GROUP                          TOPIC                          PARTITION  NEW-OFFSET     
@@ -111,8 +145,25 @@ KafkaCat as a replacement for Kafka CLI:
 
 KafkaCat (https://github.com/edenhill/kafkacat) is an open-source alternative to using the Kafka CLI, created by Magnus Edenhill. While KafkaCat is not used in this course, if you have any interest in trying it out, I recommend reading: https://medium.com/@coderunner/debugging-with-kafkacat-df7851d21968
 
+Delivery Semantics
 
+Consumer (consumer group) types:
 
+NO MÁXIMO UMA VEZ
+At Most Once: (commit the offset too early) offsets are committed as soon as the message batch is received. If the processing goes wrong, the message will be lost (it won’t be read again if your consumer goes down when processing the message batch). Because we will committed the offsets before inserting the data into destination (ex. Elasticsearch). Usage: Uber maps.
 
+PELO MENOS UMA VEZ
+At Least Once (default): offsets are committed after the message is processed. If the processing goes wrong, the message will be read again. This can result in duplicate processing of messages. Make sure your processing is idempotent (i.e. processing again the message won’t impact  your systems).
 
+EXATAMENTE UMA VEZ
+Exactly Once: Can be achieved for Kafka to Kafka workflows using Kafka Streams API. For Kafka to Sink workflows, use idempotent consumer.
 
+BOTTOM LINE: For most applications, you should use At Least Once processing and ensure your processing / transformation are idempotent.
+
+Using the right Kafka API
+I identify 5 types of workloads in Apache Kafka, and in my opinion, each corresponds to a specific API:
+* Kafka Producer API: Applications directly producing data (ex: clickstream, logs, IoT).
+* Kafka Connect Source API: Applications bridging between a datastore we don’t control and Kafka (ex: CDC, Postgres, MongoDB, Twitter, REST API).
+* Kafka Streams API / KSQL: Applications wanting to consume from Kafka and produce back into Kafka, also called stream processing. Use KSQL if you think you can write your real-time job as SQL-like, use Kafka Streams API if you think you’re going to need to write complex logic for your job.
+* Kafka Consumer API: Read a stream and perform real-time actions on it (e.g. send email…)
+* Kafka Connect Sink API: Read a stream and store it into a target store (ex: Kafka to S3, Kafka to HDFS, Kafka to PostgreSQL, Kafka to MongoDB, etc.)
