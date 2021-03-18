@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$PROJECT_DIR$/java_code/twitterProject/kafka-basics/kafka-basics.iml" filepath="$PROJECT_DIR$/java_code/twitterProject/kafka-basics/kafka-basics.iml" />
+      <module fileurl="file://$PROJECT_DIR$/java_code/twitterProject/kafka-consumer-elasticsearch/kafka-consumer-elasticsearch.iml" filepath="$PROJECT_DIR$/java_code/twitterProject/kafka-consumer-elasticsearch/kafka-consumer-elasticsearch.iml" />
+      <module fileurl="file://$PROJECT_DIR$/java_code/twitterProject/kafka-course.iml" filepath="$PROJECT_DIR$/java_code/twitterProject/kafka-course.iml" />
+      <module fileurl="file://$PROJECT_DIR$/java_code/twitterProject/kafka-producer-twitter/kafka-producer-twitter.iml" filepath="$PROJECT_DIR$/java_code/twitterProject/kafka-producer-twitter/kafka-producer-twitter.iml" />
+      <module fileurl="file://$PROJECT_DIR$/java_code/twitterProject/kafka-streams-filter-tweets/kafka-streams-filter-tweets.iml" filepath="$PROJECT_DIR$/java_code/twitterProject/kafka-streams-filter-tweets/kafka-streams-filter-tweets.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/twitterProject.iml" filepath="$PROJECT_DIR$/.idea/twitterProject.iml" />
+    </modules>
+  </component>
+</project>
